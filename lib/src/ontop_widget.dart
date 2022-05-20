@@ -38,7 +38,7 @@ class _OntopWidgetState extends State<OntopWidget> {
         height: ontopInfo.height,
         decoration: BoxDecoration(
           color: ontopInfo.color,
-          border: Border.all(),
+          border: Border.all(width: 1 / widget.scale),
           shape: ontopInfo.shap == Shap.circle
               ? BoxShape.circle
               : BoxShape.rectangle,
@@ -57,18 +57,20 @@ class _OntopWidgetState extends State<OntopWidget> {
             onDragStarted: () => delta = Offset.zero,
             onDragUpdate: (details) => delta += details.delta,
             onDragEnd: (details) {
-              widget.move((delta + centerDelta) / widget.scale);
+              widget.move(centerDelta + delta / widget.scale);
               setState(() {});
             },
-            feedbackOffset: centerDelta,
             feedback: Card(
               color: Colors.transparent,
               elevation: 0,
               child: Opacity(
                 opacity: .8,
-                child: Transform.scale(
-                  scale: widget.scale,
-                  child: onTopWidget,
+                child: Transform.translate(
+                  offset: centerDelta,
+                  child: Transform.scale(
+                    scale: widget.scale,
+                    child: onTopWidget,
+                  ),
                 ),
               ),
             ),
