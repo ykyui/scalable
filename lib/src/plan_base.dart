@@ -6,6 +6,7 @@ import 'package:two_d_plan/src/ontop_widget.dart';
 import 'package:two_d_plan/two_d_plan.dart';
 
 class PlanBase extends StatelessWidget {
+  final Border? border;
   final Image? image;
   final double width;
   final double height;
@@ -18,6 +19,7 @@ class PlanBase extends StatelessWidget {
 
   PlanBase({
     Key? key,
+    this.border,
     this.image,
     List<Color> color = const [],
     required this.width,
@@ -38,6 +40,7 @@ class PlanBase extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) => _PlanBase(
+        border: border,
         image: image,
         color: color,
         constraints: constraints,
@@ -54,6 +57,7 @@ class PlanBase extends StatelessWidget {
 }
 
 class _PlanBase extends StatefulWidget {
+  final Border? border;
   final Image? image;
   final List<Color> color;
   final BoxConstraints constraints;
@@ -66,6 +70,7 @@ class _PlanBase extends StatefulWidget {
   final Function(OntopInfo reSizeTager, Offset delta)? onTopReSize;
   const _PlanBase({
     Key? key,
+    required this.border,
     required this.image,
     required this.color,
     required this.constraints,
@@ -159,6 +164,7 @@ class __PlanBaseState extends State<_PlanBase> {
                       width: widget.width,
                       height: widget.height,
                       decoration: BoxDecoration(
+                        border: widget.border,
                         gradient: LinearGradient(
                           begin: Alignment.topRight,
                           end: Alignment.bottomLeft,
