@@ -11,6 +11,7 @@ class PlanBase extends StatelessWidget {
   final double height;
   final List<Color> color;
   final List<OntopInfo> onTopList;
+  final List<LineInfo> lineList;
   final bool scrollable;
   final Function(OntopInfo moveTager, Offset delta)? onTopMove;
   final Function(OntopInfo reSizeTager, Offset delta)? onTopReSize;
@@ -23,6 +24,7 @@ class PlanBase extends StatelessWidget {
     required this.height,
     this.onTopMove,
     this.onTopList = const [],
+    this.lineList = const [],
     this.scrollable = true,
     this.onTopReSize,
   })  : color = color.length < 2
@@ -42,6 +44,7 @@ class PlanBase extends StatelessWidget {
         width: width,
         height: height,
         onTopList: onTopList,
+        lineList: lineList,
         scrollable: scrollable,
         onTopMove: onTopMove,
         onTopReSize: onTopReSize,
@@ -57,6 +60,7 @@ class _PlanBase extends StatefulWidget {
   final double width;
   final double height;
   final List<OntopInfo> onTopList;
+  final List<LineInfo> lineList;
   final bool scrollable;
   final Function(OntopInfo moveTager, Offset delta)? onTopMove;
   final Function(OntopInfo reSizeTager, Offset delta)? onTopReSize;
@@ -68,6 +72,7 @@ class _PlanBase extends StatefulWidget {
     required this.width,
     required this.height,
     required this.onTopList,
+    required this.lineList,
     required this.scrollable,
     required this.onTopMove,
     required this.onTopReSize,
@@ -162,31 +167,52 @@ class __PlanBaseState extends State<_PlanBase> {
                       ),
                       child: Stack(children: [
                         if (widget.image != null) widget.image!,
-                        ...widget.onTopList
-                            .map((e) => OntopWidget(
-                                  scale: startingScale * baseScale,
-                                  ontopInfo: e,
-                                  move: (detail) {
-                                    if (widget.onTopMove == null) return;
-                                    final maxX = widget.width - e.width;
-                                    final maxY = widget.height - e.height;
-                                    widget.onTopMove!(
-                                        e,
-                                        Offset((e.x + detail.dx).clamp(0, maxX),
-                                            (e.y + detail.dy).clamp(0, maxY)));
-                                  },
-                                  reSize: widget.onTopReSize != null
-                                      ? (detail) {
-                                          if (e.x + e.width + detail.dx <
-                                                  widget.width &&
-                                              e.y + e.height + detail.dy <
-                                                  widget.height) {
-                                            widget.onTopReSize!(e, detail);
-                                          }
-                                        }
-                                      : null,
-                                ))
-                            .toList(),
+                        ...widget.onTopList.map((e) => OntopWidget(
+                              scale: startingScale * baseScale,
+                              ontopInfo: e,
+                              move: (detail) {
+                                if (widget.onTopMove == null) return;
+                                final maxX = widget.width - e.width;
+                                final maxY = widget.height - e.height;
+                                widget.onTopMove!(
+                                    e,
+                                    Offset((e.x + detail.dx).clamp(0, maxX),
+                                        (e.y + detail.dy).clamp(0, maxY)));
+                              },
+                              reSize: widget.onTopReSize != null
+                                  ? (detail) {
+                                      if (e.x + e.width + detail.dx <
+                                              widget.width &&
+                                          e.y + e.height + detail.dy <
+                                              widget.height) {
+                                        widget.onTopReSize!(e, detail);
+                                      }
+                                    }
+                                  : null,
+                            )),
+                        ...widget.lineList.map((e) => OntopWidget(
+                              scale: startingScale * baseScale,
+                              ontopInfo: e,
+                              move: (detail) {
+                                if (widget.onTopMove == null) return;
+                                final maxX = widget.width - e.width;
+                                final maxY = widget.height - e.height;
+                                widget.onTopMove!(
+                                    e,
+                                    Offset((e.x + detail.dx).clamp(0, maxX),
+                                        (e.y + detail.dy).clamp(0, maxY)));
+                              },
+                              reSize: widget.onTopReSize != null
+                                  ? (detail) {
+                                      if (e.direction ==
+                                          LineDirection.vertical) {
+                                        e.length += detail.dy;
+                                      } else {
+                                        e.length += detail.dx;
+                                      }
+                                    }
+                                  : null,
+                            )),
                       ]),
                     ),
                   ),
