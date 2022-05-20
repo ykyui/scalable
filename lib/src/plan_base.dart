@@ -6,51 +6,71 @@ import 'package:two_d_plan/src/ontop_widget.dart';
 import 'package:two_d_plan/two_d_plan.dart';
 
 class PlanBase extends StatelessWidget {
+  final Image? image;
   final double width;
   final double height;
+  final List<Color> color;
   final List<OntopInfo> onTopList;
   final bool scrollable;
   final Function(OntopInfo moveTager, Offset delta)? onTopMove;
+  final Function(OntopInfo reSizeTager, Offset delta)? onTopReSize;
 
-  const PlanBase({
+  PlanBase({
     Key? key,
+    this.image,
+    List<Color> color = const [],
     required this.width,
     required this.height,
     this.onTopMove,
     this.onTopList = const [],
     this.scrollable = true,
-  }) : super(key: key);
+    this.onTopReSize,
+  })  : color = color.length < 2
+            ? color.isEmpty
+                ? [Colors.transparent, Colors.transparent]
+                : [...color, ...color]
+            : color,
+        super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) => _PlanBase(
+        image: image,
+        color: color,
         constraints: constraints,
         width: width,
         height: height,
         onTopList: onTopList,
         scrollable: scrollable,
         onTopMove: onTopMove,
+        onTopReSize: onTopReSize,
       ),
     );
   }
 }
 
 class _PlanBase extends StatefulWidget {
+  final Image? image;
+  final List<Color> color;
   final BoxConstraints constraints;
   final double width;
   final double height;
   final List<OntopInfo> onTopList;
   final bool scrollable;
   final Function(OntopInfo moveTager, Offset delta)? onTopMove;
+  final Function(OntopInfo reSizeTager, Offset delta)? onTopReSize;
   const _PlanBase({
     Key? key,
+    required this.image,
+    required this.color,
     required this.constraints,
     required this.width,
     required this.height,
     required this.onTopList,
     required this.scrollable,
     required this.onTopMove,
+    required this.onTopReSize,
   }) : super(key: key);
 
   @override
@@ -133,32 +153,41 @@ class __PlanBaseState extends State<_PlanBase> {
                     child: Container(
                       width: widget.width,
                       height: widget.height,
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         gradient: LinearGradient(
                           begin: Alignment.topRight,
                           end: Alignment.bottomLeft,
-                          colors: [
-                            Colors.blue,
-                            Colors.red,
-                          ],
+                          colors: widget.color,
                         ),
                       ),
-                      child: Stack(
-                          children: widget.onTopList
-                              .map((e) => OntopWidget(
-                                    scale: startingScale * baseScale,
-                                    ontopInfo: e,
-                                    move: (detail) {
-                                      if (widget.onTopMove != null &&
-                                          e.x + e.width + detail.dx <=
-                                              widget.width &&
-                                          e.y + e.hight + detail.dy <=
-                                              widget.height) {
-                                        widget.onTopMove!(e, detail);
-                                      }
-                                    },
-                                  ))
-                              .toList()),
+                      child: Stack(children: [
+                        if (widget.image != null) widget.image!,
+                        ...widget.onTopList
+                            .map((e) => OntopWidget(
+                                  scale: startingScale * baseScale,
+                                  ontopInfo: e,
+                                  move: (detail) {
+                                    if (widget.onTopMove == null) return;
+                                    final maxX = widget.width - e.width;
+                                    final maxY = widget.height - e.height;
+                                    widget.onTopMove!(
+                                        e,
+                                        Offset((e.x + detail.dx).clamp(0, maxX),
+                                            (e.y + detail.dy).clamp(0, maxY)));
+                                  },
+                                  reSize: widget.onTopReSize != null
+                                      ? (detail) {
+                                          if (e.x + e.width + detail.dx <
+                                                  widget.width &&
+                                              e.y + e.height + detail.dy <
+                                                  widget.height) {
+                                            widget.onTopReSize!(e, detail);
+                                          }
+                                        }
+                                      : null,
+                                ))
+                            .toList(),
+                      ]),
                     ),
                   ),
                 ),
